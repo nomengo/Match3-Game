@@ -2,18 +2,29 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum GameState
+{
+    Wait,
+    Move
+}
+
 public class Board : MonoBehaviour
 {
+    public GameState currentState = GameState.Move;
     public int width;
     public int height;
     public int offSet;
     public GameObject tilePrefab;
     public GameObject[] dots;
-    private GameBackground[,] allTiles;
+    public GameObject destroyEffect;
     public GameObject[,] allDots;
+    public Dot currentDot;
+    private GameBackground[,] allTiles;
+    private FindMatches findMatches;
 
     void Start()
     {
+        findMatches = FindObjectOfType<FindMatches>();
         allTiles =  new GameBackground[width, height];
         allDots = new GameObject[width, height];
         Setup();
@@ -53,6 +64,7 @@ public class Board : MonoBehaviour
         }
     }
 
+    //finds matches
     private bool MatchesAt(int column , int row , GameObject piece)
     {
         if(column > 1)
@@ -94,8 +106,18 @@ public class Board : MonoBehaviour
     {
         if (allDots[column, row].GetComponent<Dot>().isMatched)
         {
+            //how many elements are in the matched pieces list?
+            if(findMatches.currentMatches.Count == 4 || findMatches.currentMatches.Count == 7)
+            {
+                findMatches.CheckBombs();
+            }
+            findMatches.currentMatches.Remove(allDots[column, row]);
+            //instantiating the particle effect after destroying the dot
+            GameObject particle = Instantiate(destroyEffect, allDots[column, row].transform.position, Quaternion.identity);
+            Destroy(particle, .3f);
             Destroy(allDots[column, row]);
             allDots[column, row] = null;
+            currentDot = null
         }
     }
 
@@ -186,5 +208,8 @@ public class Board : MonoBehaviour
             yield return new WaitForSeconds(.4f);
             DestroyMatches();
         }
+        findMatches.currentMatches.Clear();
+        yield return new WaitForSeconds(.4f);
+        currentState = GameState.Move;
     }
 }
