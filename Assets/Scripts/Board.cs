@@ -5,7 +5,8 @@ using UnityEngine;
 public enum GameState
 {
     Wait,
-    Move
+    Move,
+    GameOver
 }
 
 public class Board : MonoBehaviour
@@ -19,6 +20,7 @@ public class Board : MonoBehaviour
     public GameObject destroyEffect;
     public GameObject[,] allDots;
     public Dot currentDot;
+    public float dotCount;
     private GameBackground[,] allTiles;
     private FindMatches findMatches;
 
@@ -27,6 +29,7 @@ public class Board : MonoBehaviour
         findMatches = FindObjectOfType<FindMatches>();
         allTiles =  new GameBackground[width, height];
         allDots = new GameObject[width, height];
+        dotCount = 0f;
         Setup();
     }
 
@@ -106,8 +109,9 @@ public class Board : MonoBehaviour
     {
         if (allDots[column, row].GetComponent<Dot>().isMatched)
         {
+            dotCount++;
             //how many elements are in the matched pieces list?
-            if(findMatches.currentMatches.Count == 4 || findMatches.currentMatches.Count == 7)
+            if (findMatches.currentMatches.Count == 4 || findMatches.currentMatches.Count == 7)
             {
                 findMatches.CheckBombs();
             }
@@ -117,7 +121,7 @@ public class Board : MonoBehaviour
             Destroy(particle, .3f);
             Destroy(allDots[column, row]);
             allDots[column, row] = null;
-            currentDot = null
+            currentDot = null;
         }
     }
 
